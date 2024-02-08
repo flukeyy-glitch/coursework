@@ -1,0 +1,8 @@
+
+Notes:
+
+- Players with names differing due to accents between FBREF and Transfermarkt ARE included
+-- Use of unidecode module eliminates differences
+
+- Players with names not matching between FBREF and TransferMarkt ARE NOT included
+-- eg. Gabriel Dos Santos and Gabriel Maghalaes

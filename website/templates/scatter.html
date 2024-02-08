@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <!-- Position Dropdown -->
+        <div class="form-group">
+            <label for="position-dropdown">Position:</label>
+            <select class="form-control" id="position-dropdown" onchange="updateChart()">
+                {% for position in positions %}
+                    <option value="{{ position }}" {% if position == selected_position %}selected{% endif %}>{{ position }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- X Stat Dropdown -->
+        <div class="form-group">
+            <label for="x-stat-dropdown">Stat 1:</label>
+            <select class="form-control" id="x-stat-dropdown" onchange="updateChart()">
+                {% if selected_position == 'Goalkeeper' %}
+                    {% for x_stat in gk_stats %}
+                        <option value="{{ x_stat }}" {% if x_stat == selected_x_stat %}selected{% endif %}>{{ x_stat }}</option>
+                    {% endfor %}
+                {% else %}
+                    {% for x_stat in x_stats %}
+                        <option value="{{ x_stat }}" {% if x_stat == selected_x_stat %}selected{% endif %}>{{ x_stat }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+
+        <!-- Y Stat Dropdown -->
+        <div class="form-group">
+            <label for="y-stat-dropdown">Stat 2:</label>
+            <select class="form-control" id="y-stat-dropdown" onchange="updateChart()">
+                {% if selected_position == 'Goalkeeper' %}
+                    {% for y_stat in gk_stats %}
+                        <option value="{{ y_stat }}" {% if y_stat == selected_y_stat %}selected{% endif %}>{{ y_stat }}</option>
+                    {% endfor %}
+                {% else %}
+                    {% for y_stat in y_stats %}
+                        <option value="{{ y_stat }}" {% if y_stat == selected_y_stat %}selected{% endif %}>{{ y_stat }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+
+        <!-- Scatter Chart -->
+        <div id="scatter-chart">
+            {{ scatter_chart|safe }}
+        </div>
+
+        <!-- Distplot Chart -->
+        <div class="distplot-chart">
+            {{ distplot|safe }}
+        </div>
+    </div>
+
+    <script>
+        function updateChart() {
+            // Get selected values from dropdowns
+            var position = document.getElementById("position-dropdown").value;
+            var xStat = document.getElementById("x-stat-dropdown").value;
+            var yStat = document.getElementById("y-stat-dropdown").value;
+
+            // Construct new URL with selected values
+            var newUrl = `/scatter?position=${position}&x_stat=${xStat}&y_stat=${yStat}`;
+
+            // Reload the page with new URL
+            window.location.href = newUrl;
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="form-group">
+            <label for="position-dropdown">Position:</label>
+            <select class="form-control" id="position-dropdown" onchange="updateChart()">
+                {% for position in positions %}
+                    <option value="{{ position }}" {% if position == selected_position %}selected{% endif %}>{{ position }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+
+
+        <div class="form-group">
+            <label for="name-dropdown-1">Player 1:</label>
+            <select class="form-control" id="name-dropdown-1" onchange="updateChart()">
+                {% for name in names %}
+                    <option value="{{ name }}" {% if name == player1 %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="name-dropdown-2">Player 2:</label>
+            <select class="form-control" id="name-dropdown-2" onchange="updateChart()">
+                {% for name in names %}
+                    <option value="{{ name }}" {% if name == player2 %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="radar-chart">
+            {{ radar_chart|safe }}
+        </div>
+    </div>
+
+    <script>
+        function updateChart() {
+            // Get selected values from name dropdown
+            var position = document.getElementById("position-dropdown").value;
+            var selectedName1 = document.getElementById("name-dropdown-1").value;
+            var selectedName2 = document.getElementById("name-dropdown-2").value;
+
+            // Construct new URL with selected values
+            var newUrl = `/radar?position=${position}&player1=${selectedName1}&player2=${selectedName2}`;
+
+            // Reload the page with new URL
+            window.location.href = newUrl;
+        }
+    </script>
+{% endblock %}
