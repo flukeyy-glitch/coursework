@@ -1,76 +1,75 @@
-from flask import Blueprint, render_template
-
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from sqlalchemy import distinct, and_
+from sqlalchemy import and_
 
-from .models import Player, PlayerStat, Stat
-
-import numpy as np
-
-importance = Blueprint('importance', __name__)
+from website.models import Player, PlayerStat, Stat
 
 
-@importance.route('/importance')
-def stat_importance():
-    # List of all possible positions
-    positions = [position[0] for position in Player.query.with_entities(distinct(Player.position)).all()]
+def calc_stat_importance(selected_position):
+    """
 
-    total_error = 0
-    # Weights for every individual position
-    for position in positions:
-        # All player queries who have
-        # - correct position
-        # - Have stats in PlayerStat
-        print(f'POSITION: {position}')
+    This function calculates the importance of various statistics in predicting player market value
+    using a RandomForestRegressor model. It retrieves player data and their corresponding statistics
+    from the database, trains the model, and determines the feature importances.
 
-        player_queries = Player.query.filter(and_(Player.position == position,
-                                                  Player.id.in_(p_id[0] for p_id in
-                                                                PlayerStat.query.with_entities(
-                                                                    PlayerStat.player_id).all()))).all()
+    Parameters:
+    - selected_position (str): The selected player position for which the importance of
+      stats is calculated for.
 
-        player_ids = [player.id for player in player_queries]
+    Returns:
+    - feature_importances (dict): A dictionary containing the importance scores of each statistic
+      for predicting player market value.
+    - player_ids (list): A list of player IDs used in the analysis.
+    - player_names (list): A list of player names corresponding to the player IDs.
 
-        # player_names = [player.name for player in player_queries]
+    """
 
-        # Determine all relevant stats for position and puts in list
-        stat_ids = [stat.stat_id for stat in PlayerStat.query.filter(PlayerStat.player_id == player_ids[0]).all()]
 
-        stat_labels = [stat.label for stat in Stat.query.filter(Stat.id.in_(stat_ids)).all()]
 
-        # Prepare data for model training
-        x = []  # Features
-        y = []  # Target variable (e.g., market_value)
 
-        for player_id in player_ids:
-            # Extract features (stat values) for each player
-            stats = PlayerStat.query.filter(PlayerStat.player_id == player_id).all()
-            features = [float(stat.value.rstrip('%')) if isinstance(stat.value, str) else stat.value for stat in stats]
-            x.append(features[:4] + features[5:] if len(features) == 13 else features)
+    # All player queries who have
+    # - correct position
+    # - Have stats in PlayerStat
 
-            # Extract target variable
-            target_variable = Player.query.get(player_id).market_value
-            y.append(target_variable)
+    player_queries = Player.query.filter(and_(Player.position == selected_position,
+                                              Player.id.in_(p_id[0] for p_id in
+                                                            PlayerStat.query.with_entities(
+                                                                PlayerStat.player_id).all()))).all()
 
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    player_ids = [player.id for player in player_queries]
 
-        regressor = RandomForestRegressor(n_estimators=326, random_state=42, max_depth=3,
-                                          min_samples_split=2, min_samples_leaf=9)
+    player_names = [player.name for player in player_queries]
 
-        regressor.fit(x_train, y_train)
+    # Determine all relevant stats for position and puts in list
+    stat_ids = [stat.stat_id for stat in PlayerStat.query.filter(PlayerStat.player_id == player_ids[0]).all()]
 
-        predictions = regressor.predict(x_test)
+    stat_labels = [stat.label for stat in Stat.query.filter(Stat.id.in_(stat_ids)).all()]
 
-        mse = mean_squared_error(y_test, predictions)
-        print(f'Mean Squared Error: {mse}')
-        total_error += mse
+    # Prepare data for model training
+    x = []  # Features
+    y = []  # Target variable (e.g., market_value)
 
-        # Feature importance
-        feature_importances = regressor.feature_importances_
-        print('Feature Importances:')
+    for player_id in player_ids:
+        # Extract features (stat values) for each player
+        stats = PlayerStat.query.filter(PlayerStat.player_id == player_id).all()
+        features = [stat.value if isinstance(stat.value, str) else stat.value for stat in stats]
+        x.append(features[:4] + features[5:] if len(features) == 13 else features)
 
-        for stat_label, importance_ in zip(stat_labels, feature_importances):
-            print(f'{stat_label}: {int(importance_ * 100)}%')
+        # Extract target variable
+        target_variable = Player.query.get(player_id).market_value
+        y.append(target_variable)
 
-    return render_template('importance.html')
+    # Split features and target variables into train and test sets.
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+    # Create the random forest based on given parameters.
+    regressor = RandomForestRegressor(n_estimators=100, random_state=42)
+
+    # Create the model and train on input data.
+    regressor.fit(x_train, y_train)
+
+    # Feature importance
+    feature_importances = dict(zip(stat_labels, regressor.feature_importances_))
+    print(feature_importances)
+
+    return feature_importances, player_ids, player_names

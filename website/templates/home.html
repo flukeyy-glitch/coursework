@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+    <div class="px-4 pt-5 my-5 text-center border-bottom">
+        <h1 class="display-4 fw-bold text-body-emphasis">Compare the competition</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">
+                "View and analyse all players at greater ease of use with DataScout,
+                the football scouting software which implements machine learning to optimise
+                player analysis, highlight outliers in performance and inform direct comparison"
+            </p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+                <a href="/scatter">
+                    <button type="button" class="btn btn-primary btn-lg px-4 me-sm-3">Visualise the whole field</button>
+                </a>
+                <a href="/radar">
+                    <button type="button" class="btn btn-primary btn-lg px-4 me-sm-3">Compare two similar players</button>
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
