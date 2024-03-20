@@ -52,7 +52,8 @@ def calc_stat_importance(selected_position):
     for player_id in player_ids:
         # Extract features (stat values) for each player
         stats = PlayerStat.query.filter(PlayerStat.player_id == player_id).all()
-        features = [stat.value if isinstance(stat.value, str) else stat.value for stat in stats]
+        features = [stat.value for stat in stats]
+        # Accounting for GK stats
         x.append(features[:4] + features[5:] if len(features) == 13 else features)
 
         # Extract target variable

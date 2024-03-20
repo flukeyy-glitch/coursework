@@ -112,12 +112,12 @@ def scrape_data():
             for name, age, position, value_html in zip(names, ages, positions, values_html):
 
                 # Conversion from string to quantitative
-                if value_html.text[-1] == "m":
-                    value = round(float(value_html.text[1:-1]), 1)
+                if "m" in value_html.text:
+                    value = round(float(value_html.text.replace("\xa0", "")[1:-1]), 1)
 
                 # Conversion to millions unit from thousands
-                elif value_html.text[-1] == "k":
-                    value = round(float(value_html.text[1:-1]) / 1000, 1)
+                elif "k" in value_html.text:
+                    value = round(float(value_html.text.replace("k\xa0", "")[1:-1]) / 1000, 1)
 
                 # Auto to 0 value if not specified
                 else:
